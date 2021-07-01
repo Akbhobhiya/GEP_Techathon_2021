@@ -57,7 +57,6 @@ for tag in tagsList:
 
 
 import sys
-import nltk
 from nltk.corpus import wordnet
 def get_wordnet_pos(word):
     """Map POS tag to first character lemmatize() accepts"""
@@ -86,7 +85,6 @@ def get_content_as_string(document_path):
 
 # ### nltk tokenizer
 
-import nltk
 def tokenize_document(text_file):
     tokens = nltk.word_tokenize(text_file)
     return tokens
@@ -199,11 +197,8 @@ def extract_emails(resume_text):
 # nltk.download('wordnet')
 # nltk.download('punkt')
 
-
-from tika import parser  
+ 
 import unicodedata
-import os
-import sys
 import re
 
 

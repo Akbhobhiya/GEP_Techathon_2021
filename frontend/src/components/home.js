@@ -1,8 +1,9 @@
 import { Component } from 'react';
-import $ from 'jquery'
+import $, { contains } from 'jquery'
 import InputTag from './input-tag';
 const axios = require('axios');
-
+require('dotenv').config();
+const nodemailer= require('nodemailer')
 class Home extends Component{
     state = {
         numberResumes: 0,
@@ -40,7 +41,7 @@ class Home extends Component{
         let numberResumes = 0, array = document.getElementById("input-directory").files;
         for (let file of Array.from(array)){
             let fileName = file.name;
-            if(fileName.split('.')[1] == "pdf" || fileName.split('.')[1] == "docx")
+            if(fileName.split('.')[1] === "pdf" || fileName.split('.')[1] === "docx")
                 numberResumes++;
         };
 
@@ -81,12 +82,49 @@ class Home extends Component{
             });
         });
     }
+    sendmail = (email,message) => {
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.MAIL, // TODO: your gmail account
+                pass: process.env.MAIL_PASS // TODO: your gmail password
+            }
+        });
+    
+        let mailOptions = {
+            from: 'Automatic Resume Screening', // TODO: email sender
+            to: email, // TODO: email receiver
+            subject: 'Congratulation!!',
+            text: message
+        };
+    
+        transporter.sendMail(mailOptions, (err, data) => {
+            if (err) {
+                return console.log('Error occurs');
+            }
+            return console.log('Email sent!!!');
+        });
+        console.log("email sent to")
+        console.log(email)
+    }
+    
+
 
     mailCandidates = (list) => {
         // send first 'limit' candidates success mail
-                
-            
+        const pos_message1= 'Hi Candidate \nCongratulations!! \n  Your resume is shortlisted for further round.';
+        const normal_message = '\nDo not respond to this mail, It is auto generated \n Thanks for your interest\n';
+        const  pos_message = pos_message1+normal_message;
+        for (let i = 0; i < this.state.limit; i++) {
+            this.sendmail(list[i][3][0],pos_message)
+        }
+               
         // send the rest failure mail
+        const neg_message1 = 'Hi Candidate \nYour resume is not shortlisted for further round.';
+        const neg_message = neg_message1+normal_message;
+        for (let i = this.state.limit; i < list.length(); i++) {
+            this.sendmail(list[i][3][0],neg_message)
+        }
     }
 
     submit = () => {
@@ -96,7 +134,7 @@ class Home extends Component{
             alert('Please choose the Resume folder');
             return;
         }
-        if(s.numberResumes == 0){
+        if(s.numberResumes === 0){
             alert('Folder contains no relavent resumes');
             return;
         }
@@ -155,6 +193,22 @@ class Home extends Component{
         })
         
     }
+    time_taken = () =>{
+        <p class = "text-center">Please wait It will take few seconds...</p>
+        if(this.state.limit<=10){
+            return 
+            <div><p class = "text-center">Please wait It will take few seconds...</p></div>
+        }
+        else if(this.state.limit<30){
+            return <div><p class ="text-center" >Please wait It will take less then 30 seconds...</p></div>
+        }
+        else if(this.state.limit<60){
+            return <div><p class ="text-center" >Please wait It will take less then 1 minute...</p></div>
+        }
+        else{
+            return <div><p class ="text-center" >Please wait It will take few minutes!</p></div>
+        }
+    }
 
     render(){
         let listedCandidates = this.state.candidates;
@@ -174,6 +228,7 @@ class Home extends Component{
         let loadingTag = (
             <div className = "loading">
                 <p class = "text-center">SCREENING RESUMES...</p>
+                {this.time_taken}
             </div>
         )
         
