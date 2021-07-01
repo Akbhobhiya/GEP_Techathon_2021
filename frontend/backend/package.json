@@ -1,0 +1,19 @@
+{
+  "name": "techathon",
+  "version": "1.0.0",
+  "description": "backend gep_techathon",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "geckers",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}

@@ -1,0 +1,14 @@
+Key Responsibilities
+B-Tech/M-Tech degree or equivalent experience
+Advanced knowledge of application, data and infrastructure architecture disciplines, knowledge of industry wide technology strategies and best practices.
+Hands-on, working proficiency in developmental toolsets.
+10+ years of hands-on programming/application development experience using JAVA 8, Spring Boot, REST/API. Proficiency in: SQL/non-SQL, Messaging (MQ & Kafka), application performance testing and tuning, Agile.
+Good understanding in Core Java.
+Proficiency in UX/UI : HTML, CSS, JavaScript, Angular, React js or Ember will be an added advantage.
+Experience in building applications with microservices patterns and being cloud native.
+Strong communication skills, business analysis and requirements comprehension skills, detailed design skills
+Experience with performance testing, performance testing tools, investigation and resolution (RCA skills).
+Experience with various estimation methodologies to help develop roadmaps and feature level sizing.
+Strong customer focus, excellent problem solving and analytical skills.
+Banking knowledge on modules like Accounts, Customer, Statements, Swift Processing, Interest/Tax processing, Payments are preferred.
+Experience in product development in banking space is a must.
