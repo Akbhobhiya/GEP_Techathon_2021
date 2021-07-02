@@ -1,7 +1,12 @@
 import { Component } from 'react';
 import $ from 'jquery'
 import InputTag from './input-tag';
+import Loader from "react-loader-spinner";
+
+require('dotenv').config();
 const axios = require('axios');
+
+
 
 class Home extends Component{
     state = {
@@ -12,6 +17,8 @@ class Home extends Component{
         isChecked: false,
         limit: null,
         candidates: [],
+        successMail: "Congratulations!! \n  Your resume is shortlisted for further rounds.",
+        failureMail: "Your resume is not shortlisted for further rounds.",
         loading: false
     }
 
@@ -82,13 +89,9 @@ class Home extends Component{
         });
     }
 
-    mailCandidates = (list) => {
-        // send first 'limit' candidates success mail
-                
-            
-        // send the rest failure mail
-    }
+    // service: 'gmail'
 
+    
     submit = () => {
         // check wheather all inputs are filled
         let s = this.state;
@@ -108,7 +111,7 @@ class Home extends Component{
             alert('Please Choose the Job Description');
             return;
         }
-        alert("submitted for screening");
+        console.log("submitted for screening");
 
         // call the AI model, passing the required data
         
@@ -119,21 +122,17 @@ class Home extends Component{
                 loading: true
             });
         });
-        $('.top-tag').toggleClass('d-none');
+        $('.shortlisted-resumes').toggleClass('d-none');
 
         // call the APIs to rank resumes
-        let reqBody = {
-            dirName: this.state.dirName,
-            jobFile: this.state.jobFile,
-            tags: this.state.tags,
-            numberResumes: this.state.numberResumes
-        }
+        let reqBody = this.state;
         axios.post('http://localhost:4001/api/post',reqBody)
         .then(res => {
             // render the retreived data
             let list = res.data.finalList;
             this.renderList(list);
-            this.mailCandidates(list);
+            console.log(this.state.isChecked,"isChecked")
+            
 
             this.setState(state => {
                 return({
@@ -141,7 +140,7 @@ class Home extends Component{
                     loading: false
                 })
             });
-            $('.top-tag').toggleClass('d-none');
+            $('.shortlisted-resumes').toggleClass('d-none');
         })
         .catch(err => {
             console.log(err);
@@ -151,7 +150,7 @@ class Home extends Component{
                     loading: false
                 })
             });
-            $('.top-tag').toggleClass('d-none');
+            $('.shortlisted-resumes').toggleClass('d-none');
         })
         
     }
@@ -160,7 +159,7 @@ class Home extends Component{
         let listedCandidates = this.state.candidates;
         listedCandidates = listedCandidates.slice(0,this.state.limit);
         listedCandidates = listedCandidates.map((candidate,index) => {
-            let href = "file:///C:/WORK/INTERNSHIP/techathon/GEP_Techathon_2021/frontend/userData/" + this.state.dirName + "/" + candidate[0]; 
+            let href = "/userData/" + this.state.dirName + "/" + candidate[0]; 
             return(
                 <div key = { index } className = "row">
                     <span class = "col-1">{ index + 1 }</span>
@@ -173,20 +172,26 @@ class Home extends Component{
 
         let loadingTag = (
             <div className = "loading">
-                <p class = "text-center">SCREENING RESUMES...</p>
+               <Loader
+                    className = "text-center"
+                    type="TailSpin"
+                    color="rgb(155, 236, 34)"
+                    height={150}
+                    width={150}
+                />
             </div>
         )
         
         return(          
             <div className = "container">
-                { this.state.loading ? loadingTag : null }           
+                          
 
                 <div className = "top-tag">
                     <div className="card-group">
                         <div className="card m-2">
                             <div className="card-body">
                                 <h4 className="card-title">Resume Upload</h4>
-                                <p className="card-text">Please Upload the Resumes below</p>
+                                <p className="card-text">Please Upload the Resumes Folder below</p>
                                 <input id = "input-directory" directory="" webkitdirectory="" type="file" onChange = { this.changeDirectory } />
                             </div>
                         </div>
@@ -214,9 +219,9 @@ class Home extends Component{
                     </div>
 
                     <div className="jumbotron">
-                        <h1 className="display-3">Hello, HR's</h1>
+                        <h1 className="display-3">Hello,</h1>
 
-                        <p className="lead">We're committed to your privacy. Your Resumes are processed securely on our servers and is private to you.</p>
+                        <p className="lead">We're committed to your privacy. Your Resumes are processed securely on our servers and are private to you.</p>
                         <hr className="my-2" />
                         <p>Upload the Resumes,provide the Job Description and then click below</p>
                         <p className="lead">
@@ -224,16 +229,20 @@ class Home extends Component{
                         </p>
                     </div>
 
-                    <div className = "card">
-                        <div className = "card-body">
-                            <div className = "card-title font-weight-bold m-2">
-                                SHORTLISTED RESUMES
-                            </div>
-                            <div className = "card-text">
-                                { listedCandidates }
+                    <div>
+                        { this.state.loading ? loadingTag : null }  
+                        <div className = "card shortlisted-resumes">
+                            <div className = "card-body">
+                                <div className = "card-title font-weight-bold m-2">
+                                    SHORTLISTED RESUMES
+                                </div>
+                                <div className = "card-text">
+                                    { listedCandidates }
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
 
                     <div> 
                         <div className="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
@@ -259,13 +268,13 @@ class Home extends Component{
                                         <div className = "mail-templates d-none">
                                             <br/><div className = "mail-success text-left">
                                                 <h6>Mail to selected candidates</h6>
-                                                <span className = "text-muted mt-2 mb-1">Hello @name,</span>
-                                                <textarea className = "form-control text-muted" placeholder = "Mail Body..." row = "10" maxlength = "100">some dummy mail</textarea>
+                                                <span className = "text-muted mt-2 mb-1">Hello candidate,</span>
+                                                <textarea className = "form-control text-muted" placeholder = "Mail Body..." row = "10" maxlength = "100">{ this.state.successMail }</textarea>
                                             </div>
                                             <br/><div className = "mail-failure text-left">
                                                 <h6>Mail to rejected candidates</h6>
-                                                <span className = "text-muted mt-2 mb-1">Hello @name,</span>
-                                                <textarea className = "form-control text-muted" placeholder = "Mail Body..." row = "10" maxlength = "100">some dummy failure mail</textarea>
+                                                <span className = "text-muted mt-2 mb-1">Hello candidate,</span>
+                                                <textarea className = "form-control text-muted" placeholder = "Mail Body..." row = "10" maxlength = "100">{ this.state.failureMail }</textarea>
                                             </div>
                                         </div>
                                     

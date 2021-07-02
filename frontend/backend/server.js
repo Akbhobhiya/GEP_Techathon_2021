@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const spawn = require('child_process').spawn;
 const cors = require('cors');
+const nodemailer= require('nodemailer')
 
 const app = express();
 app.use(express.json());
@@ -17,6 +18,12 @@ app.post('/api/post', (req,res) => {
 
     pythonChild.stdout.on('data', (data) => {
         console.log(JSON.parse(data.toString()),"data sent on success");
+
+        console.log(body.isChecked)
+        let list = (JSON.parse(data.toString())).finalList;
+        if(body.isChecked)
+            mailCandidates(list,body);
+
         res.status(200).json(JSON.parse(data.toString()));
     });
 
@@ -25,28 +32,54 @@ app.post('/api/post', (req,res) => {
         // res.status(404).send(data);
     });
 
-    setTimeout(function(){
-        res.status(400).send("Some error")
-    },body.numberResumes * 5000)
-
 });
 
-
-const callPythonScript = () => {
-    let childPython = spawn('python',['./resumeParse/sample.py','ATS resumes screening']);
-            
-    childPython.stdout.on('data', data => {
-        console.log(data,"Output has been printed from sample.py");
+   
+sendmail = (email,message) => {
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'mudassirakhil@gmail.com', // TODO: your gmail account
+            pass: 'akhil.aalu' // TODO: your gmail password
+        }
     });
 
-    childPython.stderr.on('data', data => {
-        console.log(data,"error from sample.py");
-    });
+    let mailOptions = {
+        from: 'mudassirakhil@gmail.com', // TODO: email sender
+        to: email, // TODO: email receiver
+        subject: 'GEP JOBS -- for testing of ATS',
+        text: message
+    };
 
-    childPython.on('close', (code) => {
-        console.log("sample.py unexpectedly closed on code", code);
-    });    
+    transporter.sendMail(mailOptions, (err, data) => {
+        if (err) {
+            return console.log('Error occured while sending mail');
+        }
+        return console.log('Email sent!!!');
+    });
+    console.log("email sent to")
+    console.log(email)
 }
+
+mailCandidates = (list,body) => {
+    // send first 'limit' candidates success mail
+    const pos_message1= "Hi candidate,\n" + body.successMail;
+    const normal_message = '\n\nDo not respond to this mail, It is auto generated \n\n Thanks for your interest\n';
+    const  pos_message = pos_message1+normal_message;
+    for (let i = 0; i < body.limit; i++) {
+        sendmail(list[i][3][0],pos_message)
+    }
+           
+    // send the rest failure mail
+    const neg_message1 = "Hi candidate,\n" + body.failureMail;
+    const neg_message = neg_message1+normal_message;
+    for (let i = body.limit; i < list.length; i++) {
+        sendmail(list[i][3][0],neg_message)
+    }
+
+    console.log('mails sent')
+}
+
 
 app.listen(port, () => {
     console.log("server started")

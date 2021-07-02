@@ -229,8 +229,10 @@ def process_files(req_document,resume_docs,tags_string):
     for filename in resume_docs:
         if filename.endswith(".pdf") or filename.endswith(".txt") or filename.endswith(".docx") or filename.endswith(".doc"):
             
-            parsed_pdf = parser.from_file(filename)
+            parsed_pdf = parser.from_file(filename)           
             data = parsed_pdf['content'] 
+            if (data == None):
+                data = " "
             data = "".join([char for char in data if not is_pua(char)])
             data = data.replace('\n', ' ')
             data = re.sub('\W+', ' ', data) #Select only alpha numerics
@@ -246,6 +248,8 @@ def process_files(req_document,resume_docs,tags_string):
         if filename.endswith(".pdf") or filename.endswith(".txt") or filename.endswith(".docx") or filename.endswith(".doc"):
             parsed_pdf = parser.from_file(filename)
             data = parsed_pdf['content'] 
+            if data == None:
+                data = "temp"
             name = extract_name(data)
             data = "".join([char for char in data if not is_pua(char)])
             list_name.append(name)
