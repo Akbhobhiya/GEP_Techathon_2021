@@ -1,47 +1,3 @@
-from tika import parser  
-import unicodedata
-import os
-import sys
-import json
-import nltk
-
-# nltk.download('stopwords')
-
-## use OCR to convert PDF/DOCX files to text files
- 
-# python object that containes the JSON data
-reqBody = json.loads(sys.argv[1]) 
-
-# get directory names where resumes are stored - call it 'RESUMES'
-resumesDir = reqBody["dirName"]
-# resumesDir = "resumes"
-# resumesDir = "resumes" # hard-coded now
-
-# path to 'RESUMES' directory
-pathResumesDir = os.getcwd()
-pathResumesDir = os.path.dirname(pathResumesDir)
-pathResumesDir = os.path.join(pathResumesDir,"userData\\" + resumesDir)
-
-pathJobFile = os.path.dirname(pathResumesDir)
-pathJobFile = os.path.join(pathJobFile,"JobDescription\\" + reqBody["jobFile"])
-
-tagsList= reqBody["tags"]
-tags_string = ""
-for tag in tagsList:
-        tags_string = tags_string + tag
-# pathJobFile = os.path.join(pathJobFile,"JobDescription\\" + "jobFile.txt")
-
-##
-
-## use AI model to shortlist the required resumes
-
-# add data of job-description input to jobFile
-# if(reqBody["jobFile"]): 
-#     pathJobFile = os.path.dirname(pathResumesDir)
-#     jobFile = open(os.path.join(pathJobFile,"\\jobDescription\\" + reqBody["jobFile"]),'w+')        
-#     jobFile.append(
-
-
 #!/usr/bin/env python
 # coding: utf-8
 
@@ -51,12 +7,11 @@ for tag in tagsList:
 
 # ### lemma tagger
 
-
-
-
+# In[40]:
 
 
 import sys
+import nltk
 from nltk.corpus import wordnet
 def get_wordnet_pos(word):
     """Map POS tag to first character lemmatize() accepts"""
@@ -70,6 +25,7 @@ def get_wordnet_pos(word):
 
 # ### file processing
 
+# In[41]:
 
 
 from pathlib import Path
@@ -85,6 +41,10 @@ def get_content_as_string(document_path):
 
 # ### nltk tokenizer
 
+# In[42]:
+
+
+import nltk
 def tokenize_document(text_file):
     tokens = nltk.word_tokenize(text_file)
     return tokens
@@ -96,6 +56,7 @@ def tag_tokens(tokens):
 
 # ### tf_idf_lemmetizer
 
+# In[43]:
 
 
 from nltk.stem.wordnet import WordNetLemmatizer
@@ -111,6 +72,8 @@ def stemmed_words(doc):
 # # Text_processing
 
 # ### cv_cosine_similarity
+
+# In[44]:
 
 
 from sklearn.metrics.pairwise import cosine_similarity
@@ -132,6 +95,8 @@ def get_binay_cosine_similarity(compare_doc,doc_corpus):
 
 # ### tf_idf_cosine_similarity
 
+# In[45]:
+
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -150,6 +115,8 @@ def get_tf_idf_cosine_similarity(compare_doc,doc_corpus):
 
 # # Name Extraction from Resume
 
+# In[46]:
+
 
 import spacy
 from spacy.matcher import Matcher
@@ -167,10 +134,14 @@ def extract_name(resume_text):
     
 
 
+# In[47]:
 
 
-# nltk.download('maxent_ne_chunker')
-# nltk.download('words')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+
+
+# In[48]:
 
 
 from pathlib import Path
@@ -182,6 +153,7 @@ def get_resume_txt(document_path):
 
 # # Email Extraction from Resume
 
+# In[49]:
 
 
 EMAIL_REG = re.compile(r'[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+')
@@ -192,13 +164,21 @@ def extract_emails(resume_text):
 # # processing 
 # ### resume_matcher
 
+# In[50]:
 
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('wordnet')
-# nltk.download('punkt')
 
- 
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+nltk.download('punkt')
+
+
+# In[53]:
+
+
+from tika import parser  
 import unicodedata
+import os
+import sys
 import re
 
 
@@ -207,13 +187,10 @@ def is_pua(c):
 
 
 
-def process_files(req_document,resume_docs,tags_string):
+def process_files(req_document,resume_docs):
     if req_document.endswith(".pdf") or req_document.endswith(".txt") or req_document.endswith(".docx") or req_document.endswith(".doc"):   
         parsed_pdf = parser.from_file(req_document)
-        job_description_txt = parsed_pdf['content']
-        if (job_description_txt == None):
-            job_description_txt = " "
-        job_description_txt = job_description_txt + tags_string 
+        job_description_txt = parsed_pdf['content'] 
         job_description_txt = "".join([char for char in job_description_txt if not is_pua(char)])
         job_description_txt = job_description_txt.replace('\n', ' ')
         job_description_txt = re.sub('\W+', ' ', job_description_txt) #Select only alpha numerics
@@ -224,10 +201,8 @@ def process_files(req_document,resume_docs,tags_string):
     for filename in resume_docs:
         if filename.endswith(".pdf") or filename.endswith(".txt") or filename.endswith(".docx") or filename.endswith(".doc"):
             
-            parsed_pdf = parser.from_file(filename)           
+            parsed_pdf = parser.from_file(filename)
             data = parsed_pdf['content'] 
-            if (data == None):
-                data = " "
             data = "".join([char for char in data if not is_pua(char)])
             data = data.replace('\n', ' ')
             data = re.sub('\W+', ' ', data) #Select only alpha numerics
@@ -243,8 +218,6 @@ def process_files(req_document,resume_docs,tags_string):
         if filename.endswith(".pdf") or filename.endswith(".txt") or filename.endswith(".docx") or filename.endswith(".doc"):
             parsed_pdf = parser.from_file(filename)
             data = parsed_pdf['content'] 
-            if data == None:
-                data = "temp"
             name = extract_name(data)
             data = "".join([char for char in data if not is_pua(char)])
             list_name.append(name)
@@ -268,35 +241,28 @@ def process_files(req_document,resume_docs,tags_string):
     return final_doc_rating_list
     
 
- 
+                
+if __name__ == "__main__":
+     req_document = sys.argv[0]
+     resume_docs = sys.argv[1]
+     final_doc_rating_list=process_files(req_document,resume_docs)
+
+
+# In[54]:
+
+return final_doc_rating_list
 # for detail in final_doc_rating_list:
 #     print(detail[2],", Email: ",detail[3], ", Resume File name: ", detail[0],", Score: ",detail[1])
 
 
+# In[ ]:
 
-# result = {
-#     "msg": "task done"
-# }
-# print(json.dumps(result))
 
-directory = os.fsencode(pathResumesDir)
-listResumes = []
-for file in os.listdir(directory):
-    filename = os.fsdecode(file)
-    listResumes.append(os.path.join(pathResumesDir,filename))    
 
-if __name__ == "__main__":    
-    req_document = pathJobFile
-    resume_docs = listResumes
 
-    final_doc_rating_list = process_files(req_document,resume_docs,tags_string)
-    # result = {
-    #     "finalList": ["list","element"]
-    # }
-    result = {
-        "finalList": final_doc_rating_list
-    }
-    print(json.dumps(result))
+
+# In[ ]:
+
 
 
 

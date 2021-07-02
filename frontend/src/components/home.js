@@ -1,12 +1,10 @@
 import { Component } from 'react';
-import $ from 'jquery'
+import $, { contains } from 'jquery'
 import InputTag from './input-tag';
 import Loader from "react-loader-spinner";
 
 require('dotenv').config();
 const axios = require('axios');
-
-
 
 class Home extends Component{
     state = {
@@ -47,7 +45,7 @@ class Home extends Component{
         let numberResumes = 0, array = document.getElementById("input-directory").files;
         for (let file of Array.from(array)){
             let fileName = file.name;
-            if(fileName.split('.')[1] == "pdf" || fileName.split('.')[1] == "docx")
+            if(fileName.split('.')[1] === "pdf" || fileName.split('.')[1] === "docx")
                 numberResumes++;
         };
 
@@ -88,8 +86,35 @@ class Home extends Component{
             });
         });
     }
+    sendmail = (email,message) => {
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.MAIL, // TODO: your gmail account
+                pass: process.env.MAIL_PASS // TODO: your gmail password
+            }
+        });
+    
+        let mailOptions = {
+            from: 'Automatic Resume Screening', // TODO: email sender
+            to: email, // TODO: email receiver
+            subject: 'Congratulation!!',
+            text: message
+        };
+    
+        transporter.sendMail(mailOptions, (err, data) => {
+            if (err) {
+                return console.log('Error occurs');
+            }
+            return console.log('Email sent!!!');
+        });
+        console.log("email sent to")
+        console.log(email)
+    }
+    
 
-    // service: 'gmail'
+
+
 
     
     submit = () => {
@@ -99,7 +124,7 @@ class Home extends Component{
             alert('Please choose the Resume folder');
             return;
         }
-        if(s.numberResumes == 0){
+        if(s.numberResumes === 0){
             alert('Folder contains no relavent resumes');
             return;
         }
@@ -153,6 +178,22 @@ class Home extends Component{
             $('.shortlisted-resumes').toggleClass('d-none');
         })
         
+    }
+    time_taken = () =>{
+        <p class = "text-center">Please wait It will take few seconds...</p>
+        if(this.state.limit<=10){
+            return 
+            <div><p class = "text-center">Please wait It will take few seconds...</p></div>
+        }
+        else if(this.state.limit<30){
+            return <div><p class ="text-center" >Please wait It will take less then 30 seconds...</p></div>
+        }
+        else if(this.state.limit<60){
+            return <div><p class ="text-center" >Please wait It will take less then 1 minute...</p></div>
+        }
+        else{
+            return <div><p class ="text-center" >Please wait It will take few minutes!</p></div>
+        }
     }
 
     render(){
